@@ -1,9 +1,7 @@
 name: .NET
 
 on:
-  push:
-    tags:
-      - v*
+  workflow_dispatch:
 
 jobs:
   build_cli:
@@ -35,12 +33,9 @@ jobs:
       run: dotnet build --configuration $Env:BUILD_CONFIG --no-restore
       
     - name: Publish Linux CLI
-      run: dotnet publish $Env:CLI_PROJECT --configuration $Env:BUILD_CONFIG -r linux-x64 -p:PublishSingleFile=true --self-contained true --output $Env:GITHUB_WORKSPACE
-      
-    - name: Publish Windows CLI
-      run: dotnet publish $Env:CLI_PROJECT --configuration $Env:BUILD_CONFIG -r win-x64 -p:PublishSingleFile=true --self-contained true --output $Env:GITHUB_WORKSPACE
+      run: dotnet publish $Env:CLI_PROJECT --configuration $Env:BUILD_CONFIG -r osx-arm64 -p:PublishSingleFile=true --self-contained true --output $Env:GITHUB_WORKSPACE
           
-    - uses: ncipollo/release-action@v1.12.0
+    - uses: actions/upload-artifact@v4
       with:
-        bodyFile: CHANGELOG.MD
-        artifacts: "RPGMakerDecrypter-cli,RPGMakerDecrypter-cli.exe"
+        name: my-artifact
+        path: RPGMakerDecrypter-cli
