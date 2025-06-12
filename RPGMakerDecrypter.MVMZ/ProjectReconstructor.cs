@@ -34,14 +34,32 @@ namespace RPGMakerDecrypter.MVMZ
                 Directory.CreateDirectory(outputPath);
             }
 
+            // 获取源目录下所有一级子目录，建立小写->原始名映射
+            var sourceDirs = Directory.Exists(deploymentPath)
+                ? Directory.GetDirectories(deploymentPath, "*", SearchOption.TopDirectoryOnly)
+                : new string[0];
+            var sourceDirMap = sourceDirs.ToDictionary(
+                d => Path.GetFileName(d).ToLowerInvariant(),
+                d => Path.GetFileName(d));
+
             foreach (var directory in _directories)
             {
-                CopyDirectory(Path.Combine(deploymentPath, directory), Path.Combine(outputPath, directory));
+                // 查找实际存在的目录名（忽略大小写）
+                if (sourceDirMap.TryGetValue(directory.ToLowerInvariant(), out var realDirName))
+                {
+                    CopyDirectory(
+                        Path.Combine(deploymentPath, realDirName),
+                        Path.Combine(outputPath, realDirName));
+                }
             }
             
             foreach (var file in _files)
             {
-                File.Copy(Path.Combine(deploymentPath, file), Path.Combine(outputPath, file));
+                var srcFile = Path.Combine(deploymentPath, file);
+                if (File.Exists(srcFile))
+                {
+                    File.Copy(srcFile, Path.Combine(outputPath, file));
+                }
             }
             
             CreateProjectFile(outputPath);
