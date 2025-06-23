@@ -10,6 +10,7 @@ namespace RPGMakerDecrypter.MVMZ
             "audio",
             "css",
             "data",
+            "dataex",
             "effects",
             "fonts",
             "icon",
@@ -35,31 +36,31 @@ namespace RPGMakerDecrypter.MVMZ
                 Directory.CreateDirectory(outputPath);
             }
 
-            // 获取源目录下所有一级子目录，建立小写->原始名映射
-            var sourceDirs = Directory.Exists(deploymentPath)
+            // Get all top-level subdirectories and create lowercase-to-original mapping
+            var sourceDirectories = Directory.Exists(deploymentPath)
                 ? Directory.GetDirectories(deploymentPath, "*", SearchOption.TopDirectoryOnly)
                 : new string[0];
-            var sourceDirMap = sourceDirs.ToDictionary(
-                d => Path.GetFileName(d).ToLowerInvariant(),
-                d => Path.GetFileName(d));
+            var sourceDirectoryMap = sourceDirectories.ToDictionary(
+                directoryPath => Path.GetFileName(directoryPath).ToLowerInvariant(),
+                directoryPath => Path.GetFileName(directoryPath));
 
             foreach (var directory in _directories)
             {
-                // 查找实际存在的目录名（忽略大小写）
-                if (sourceDirMap.TryGetValue(directory.ToLowerInvariant(), out var realDirName))
+                // Find actual directory name (case-insensitive)
+                if (sourceDirectoryMap.TryGetValue(directory.ToLowerInvariant(), out var actualDirectoryName))
                 {
                     CopyDirectory(
-                        Path.Combine(deploymentPath, realDirName),
-                        Path.Combine(outputPath, realDirName));
+                        Path.Combine(deploymentPath, actualDirectoryName),
+                        Path.Combine(outputPath, actualDirectoryName));
                 }
             }
             
             foreach (var file in _files)
             {
-                var srcFile = Path.Combine(deploymentPath, file);
-                if (File.Exists(srcFile))
+                var sourceFile = Path.Combine(deploymentPath, file);
+                if (File.Exists(sourceFile))
                 {
-                    File.Copy(srcFile, Path.Combine(outputPath, file));
+                    File.Copy(sourceFile, Path.Combine(outputPath, file));
                 }
             }
             
